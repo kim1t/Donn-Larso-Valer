@@ -7,6 +7,11 @@ use App\Http\Controllers\ArtGalleryController;
 use App\Http\Controllers\ArtworkController;
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ConversationController;
+use App\Http\Controllers\ExhibitionArtworkController;
+use App\Http\Controllers\ExhibitionController;
+use App\Http\Controllers\MessageController;
+use App\Http\Controllers\ParticipantController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
