@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: donn-larso-valer
+  namespace: donn-larso-valer
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: Host(`donn-lar-so-valer.brunobernard.dev`)
+    services:
+    - name: donn-larso-valer
+      port: 80
+  tls:
+    secretName: donn-larso-valer-tls

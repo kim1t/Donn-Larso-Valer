@@ -1,0 +1,24 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageUpdateAutomation
+metadata:
+  name: donn-larso-valer
+  namespace: flux-system
+spec:
+  interval: 5m
+  sourceRef:
+    kind: GitRepository
+    name: donn-larso-valer
+  git:
+    checkout:
+      ref:
+        branch: main
+    commit:
+      author:
+        name: fluxcdbot
+        email: fluxcdbot@users.noreply.github.com
+      messageTemplate: "deploy: update image to {{range .Changed.Changes}}{{.NewValue}}{{end}}"
+    push:
+      branch: main
+  update:
+    path: ./kubernetes
+    strategy: Setters
