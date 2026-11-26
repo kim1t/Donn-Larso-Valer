@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: donn-larso-valer
+  namespace: donn-larso-valer
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: donn-larso-valer
+  template:
+    metadata:
+      labels:
+        app: donn-larso-valer
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsUser: 82
+        runAsGroup: 82
+        fsGroup: 82
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                - luna
+      containers:
+      - name: app
+        image: ghcr.io/kim1t/donn-larso-valer:latest # {"$imagepolicy": "flux-system:donn-larso-valer"}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 8080
+        env:
+        - name: APP_URL
+          value: https://donn-lar-so-valer.brunobernard.dev
+        - name: APP_KEY
+          valueFrom:
+            secretKeyRef:
+              name: donn-larso-valer
+              key: APP_KEY
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        startupProbe:
+          httpGet:
+            path: /up
+            port: http
+          periodSeconds: 5
+          failureThreshold: 36
+        readinessProbe:
+          httpGet:
+            path: /up
+            port: http
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /up
+            port: http
+          periodSeconds: 20
+          failureThreshold: 3
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: "1"
+            memory: 512Mi
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: data
