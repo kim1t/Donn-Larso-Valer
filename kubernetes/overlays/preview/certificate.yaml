@@ -1,7 +1,5 @@
+$patch: delete
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: donn-larso-valer-tls
-spec:
-  dnsNames:
-  - donn-lar-so-valer-pr-PR_NUMBER.brunobernard.dev
