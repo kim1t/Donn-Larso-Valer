@@ -58,6 +58,7 @@ spec:
               key: APP_KEY
         securityContext:
           allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
           capabilities:
             drop:
             - ALL
@@ -94,6 +95,14 @@ spec:
           mountPath: /data
         - name: storage
           mountPath: /var/www/html/storage/app/public
+        - name: tmp
+          mountPath: /tmp
+        - name: framework
+          mountPath: /var/www/html/storage/framework
+        - name: logs
+          mountPath: /var/www/html/storage/logs
+        - name: bootstrap-cache
+          mountPath: /var/www/html/bootstrap/cache
       volumes:
       - name: data
         persistentVolumeClaim:
@@ -101,3 +110,11 @@ spec:
       - name: storage
         persistentVolumeClaim:
           claimName: storage
+      - name: tmp
+        emptyDir: {}
+      - name: framework
+        emptyDir: {}
+      - name: logs
+        emptyDir: {}
+      - name: bootstrap-cache
+        emptyDir: {}
