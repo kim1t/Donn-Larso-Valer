@@ -49,12 +49,14 @@ COPY --from=frontend --chown=www-data:www-data /app/public/build /var/www/html/p
 RUN mkdir -p \
         /data \
         /var/lib/nginx/logs \
+        /var/www/html/storage/app/public \
         /var/www/html/storage/framework/cache \
         /var/www/html/storage/framework/sessions \
         /var/www/html/storage/framework/views \
         /var/www/html/storage/logs \
         /var/www/html/bootstrap/cache \
     && chown -R www-data:www-data /data /var/lib/nginx /var/www/html/storage /var/www/html/bootstrap/cache \
+    && ln -s /var/www/html/storage/app/public /var/www/html/public/storage \
     && rm -f /var/www/html/public/hot
 
 USER www-data

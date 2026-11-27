@@ -92,7 +92,12 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /data
+        - name: storage
+          mountPath: /var/www/html/storage/app/public
       volumes:
       - name: data
         persistentVolumeClaim:
           claimName: data
+      - name: storage
+        persistentVolumeClaim:
+          claimName: storage
