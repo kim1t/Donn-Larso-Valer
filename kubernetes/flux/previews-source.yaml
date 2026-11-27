@@ -1,0 +1,12 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: donn-larso-valer-previews
+  namespace: flux-system
+spec:
+  interval: 1m
+  ref:
+    branch: previews
+  secretRef:
+    name: donn-larso-valer-repo-auth
+  url: ssh://git@github.com/kim1t/Donn-Larso-Valer.git

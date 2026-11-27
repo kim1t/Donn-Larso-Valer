@@ -3,6 +3,12 @@ set -eu
 
 cd /var/www/html
 
+if [ -z "${APP_KEY:-}" ]; then
+    [ "${APP_ENV:-}" = preview ] || { echo "APP_KEY is not set" >&2; exit 1; }
+    APP_KEY="$(php artisan key:generate --show)"
+    export APP_KEY
+fi
+
 mkdir -p \
     "$(dirname "$DB_DATABASE")" \
     bootstrap/cache \

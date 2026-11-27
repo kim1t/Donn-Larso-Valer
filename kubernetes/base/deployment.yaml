@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: donn-larso-valer
-  namespace: donn-larso-valer
 spec:
   replicas: 1
   strategy:

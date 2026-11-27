@@ -2,7 +2,6 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: donn-larso-valer-tls
-  namespace: donn-larso-valer
 spec:
   secretName: donn-larso-valer-tls
   issuerRef:
