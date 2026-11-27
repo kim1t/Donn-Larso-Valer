@@ -1,0 +1,6 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: any
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled

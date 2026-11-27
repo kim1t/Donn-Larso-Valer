@@ -1,0 +1,138 @@
+name: Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled, closed]
+
+permissions:
+  contents: write
+  packages: write
+  pull-requests: write
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  PR: ${{ github.event.pull_request.number }}
+  SHA: ${{ github.event.pull_request.head.sha }}
+  IMAGE: ghcr.io/kim1t/donn-larso-valer
+  URL: https://donn-lar-so-valer-pr-${{ github.event.pull_request.number }}.brunobernard.dev
+  GH_TOKEN: ${{ github.token }}
+  MAX_PREVIEWS: 3
+
+jobs:
+  deploy:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository
+      && contains(github.event.pull_request.labels.*.name, 'preview')
+      && (
+        contains(fromJSON('["opened", "synchronize", "reopened"]'), github.event.action)
+        || (github.event.action == 'labeled' && github.event.label.name == 'preview')
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.SHA }}
+
+      - uses: actions/checkout@v7
+        with:
+          ref: previews
+          path: .previews
+
+      - name: Check the preview limit
+        run: |
+          others=$(find .previews -mindepth 1 -maxdepth 1 -type d -name 'pr-*' ! -name "pr-$PR" | wc -l)
+          if [ "$others" -ge "$MAX_PREVIEWS" ]; then
+            .github/scripts/preview-comment.sh "⛔ No preview for #$PR: $MAX_PREVIEWS previews are already running. Remove the \`preview\` label from another pull request, then push again."
+            exit 1
+          fi
+
+      - run: .github/scripts/preview-comment.sh "🔄 Preview for #$PR is building (commit ${SHA:0:7})"
+
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:pr-${{ env.PR }}-${{ env.SHA }}
+            ${{ env.IMAGE }}:pr-${{ env.PR }}
+          cache-from: type=gha,scope=preview
+          cache-to: type=gha,scope=preview,mode=max
+
+      - name: Publish the preview manifests
+        run: |
+          mkdir -p ".previews/pr-$PR"
+          kubectl kustomize kubernetes/overlays/preview \
+            | sed "s/PR_NUMBER/$PR/g; s#PREVIEW_IMAGE#$IMAGE:pr-$PR-$SHA#g" \
+            > ".previews/pr-$PR/preview.yaml"
+          cd .previews
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "pr-$PR"
+          git diff --cached --quiet || git commit -m "preview: deploy #$PR at ${SHA:0:7}"
+          for attempt in 1 2 3 4 5; do
+            git push origin HEAD:previews && exit 0
+            git pull --rebase origin previews
+          done
+          exit 1
+
+      - name: Wait for the preview to answer
+        run: |
+          for attempt in $(seq 1 60); do
+            curl -fsS -o /dev/null "$URL/up" && exit 0
+            sleep 10
+          done
+          exit 1
+
+      - if: success()
+        run: .github/scripts/preview-comment.sh "✅ Preview for #$PR is live: $URL (commit ${SHA:0:7}, image \`$IMAGE:pr-$PR-$SHA\`, fresh SQLite database)"
+
+      - if: failure()
+        run: .github/scripts/preview-comment.sh "❌ Preview for #$PR failed (commit ${SHA:0:7}). See $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+  remove:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository
+      && (
+        github.event.action == 'closed'
+        || (github.event.action == 'unlabeled' && github.event.label.name == 'preview')
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/scripts
+
+      - uses: actions/checkout@v7
+        with:
+          ref: previews
+          path: .previews
+
+      - name: Remove the preview manifests
+        id: remove
+        run: |
+          cd .previews
+          [ -d "pr-$PR" ] || { echo "removed=false" >> "$GITHUB_OUTPUT"; exit 0; }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -rq "pr-$PR"
+          git commit -m "preview: remove #$PR"
+          for attempt in 1 2 3 4 5; do
+            git push origin HEAD:previews && { echo "removed=true" >> "$GITHUB_OUTPUT"; exit 0; }
+            git pull --rebase origin previews
+          done
+          exit 1
+
+      - if: steps.remove.outputs.removed == 'true'
+        run: .github/scripts/preview-comment.sh "🗑️ Preview for #$PR was removed."

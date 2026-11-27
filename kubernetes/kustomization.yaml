@@ -1,17 +1,14 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-- namespace.yaml
-- secret.yaml
-- pvc.yaml
-- deployment.yaml
-- service.yaml
-- certificate.yaml
-- ingressroute.yaml
-- image-automation/repository.yaml
-- image-automation/policy.yaml
-- image-automation/update.yaml
+- flux/production.yaml
+- flux/previews-source.yaml
+- flux/previews.yaml
+- flux/image-automation/repository.yaml
+- flux/image-automation/policy.yaml
+- flux/image-automation/update.yaml
 patches:
-- path: prune-protection.yaml
+- path: flux/prune-protection.yaml
   target:
-    kind: (Namespace|PersistentVolumeClaim)
+    kind: Kustomization
+    group: kustomize.toolkit.fluxcd.io
