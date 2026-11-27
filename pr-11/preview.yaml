@@ -1,0 +1,145 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: donn-larso-valer-pr-11
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: donn-larso-valer
+  namespace: donn-larso-valer-pr-11
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+  selector:
+    app: donn-larso-valer
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: storage
+  namespace: donn-larso-valer-pr-11
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: longhorn
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: donn-larso-valer
+  namespace: donn-larso-valer-pr-11
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: donn-larso-valer
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: donn-larso-valer
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - env:
+        - name: APP_ENV
+          value: preview
+        - name: APP_URL
+          value: https://donn-lar-so-valer-pr-11.brunobernard.dev
+        image: ghcr.io/kim1t/donn-larso-valer:pr-11-1697161a3ac14b15e3f1a1ad79aaf0aee837b4f5
+        imagePullPolicy: IfNotPresent
+        lifecycle:
+          preStop:
+            sleep:
+              seconds: 5
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /up
+            port: http
+          periodSeconds: 20
+        name: app
+        ports:
+        - containerPort: 8080
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /up
+            port: http
+          periodSeconds: 10
+        resources:
+          limits:
+            cpu: "1"
+            memory: 512Mi
+          requests:
+            cpu: 50m
+            memory: 128Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        startupProbe:
+          failureThreshold: 180
+          httpGet:
+            path: /up
+            port: http
+          periodSeconds: 1
+        volumeMounts:
+        - mountPath: /data
+          name: data
+        - mountPath: /var/www/html/storage/app/public
+          name: storage
+      nodeSelector:
+        kubernetes.io/hostname: luna
+      securityContext:
+        fsGroup: 82
+        runAsGroup: 82
+        runAsNonRoot: true
+        runAsUser: 82
+        seccompProfile:
+          type: RuntimeDefault
+      volumes:
+      - emptyDir: {}
+        name: data
+      - name: storage
+        persistentVolumeClaim:
+          claimName: storage
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: donn-larso-valer
+  namespace: donn-larso-valer-pr-11
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: Host(`donn-lar-so-valer-pr-11.brunobernard.dev`)
+    middlewares:
+    - name: preview-commit
+    services:
+    - name: donn-larso-valer
+      port: 80
+  tls:
+    store:
+      name: default
+      namespace: traefik-system
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: preview-commit
+  namespace: donn-larso-valer-pr-11
+spec:
+  headers:
+    customResponseHeaders:
+      X-Preview-Commit: 1697161a3ac14b15e3f1a1ad79aaf0aee837b4f5
