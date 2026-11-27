@@ -61,7 +61,7 @@ class ArtworkController extends Controller
         $artwork->update($validated);
 
         return response()->json([
-            'message' => 'Artist updated successfully',
+            'message' => 'Artwork updated successfully',
             'data'=> $artwork
         ], 200);
     }

@@ -55,8 +55,8 @@ class MediaController extends Controller
         }
 
         $validated = $request->validate([
-            'media_name' => 'required|string|max:255',
-            'media_type' => 'required|string|max:255'
+            'media_name' => 'sometimes|required|string|max:255',
+            'media_type' => 'sometimes|required|string|max:255'
         ]);
 
         $media->update($validated);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Exhibition;
+use Illuminate\Validation\Validator;
 
 class ExhibitionController extends Controller
 {
@@ -52,6 +53,7 @@ class ExhibitionController extends Controller
         ], 201);
     }
 
+    
     public function update(Request $request, $id)
     {
         $exhibition = Exhibition::find($id);
@@ -65,12 +67,20 @@ class ExhibitionController extends Controller
         $validated = $request->validate([
             'title' => 'sometimes|required|string|max:255',
             'start_date' => 'sometimes|required|date',
-            'end_date' => 'sometimes|required|date|after_or_equal:start_date',
+            'end_date' => 'sometimes|required|date',
             'capacity' => 'sometimes|required|integer|min:1',
             'art_gallery_id' => 'sometimes|required|exists:art_galleries,id',
             'theme' => 'sometimes|nullable|string|max:255'
         ]);
 
+        $startDate = $validated['start_date'] ?? $exhibition->start_date;
+        $endDate = $validated['end_date'] ?? $exhibition->end_date;
+
+        if ($endDate < $startDate) {
+            return response()->json([
+                'message' => 'End date cannot be before start date.'
+            ], 422);
+        }
         $exhibition->update($validated);
 
         return response()->json([
@@ -78,6 +88,7 @@ class ExhibitionController extends Controller
             'data' => $exhibition
         ], 200);
     }
+
 
     public function destroy($id)
     {

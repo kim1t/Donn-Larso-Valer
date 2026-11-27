@@ -34,8 +34,8 @@ class ArtistController extends Controller
     public function store(Request $request){
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'avatar' => 'nullable|string',
+            'description' => 'nullable|string|max:1000',
+            'avatar' => 'nullable|string|max:2048',
             'user_id' => 'required|exists:users,id',
         ]);
 
@@ -57,8 +57,8 @@ class ArtistController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'description' => 'sometimes|nullable|string',
-            'avatar' => 'sometimes|nullable|string',
+            'description' => 'sometimes|nullable|string|max:1000',
+            'avatar' => 'sometimes|nullable|string|max:2048',
         ]);
 
         $artist->update($validated);

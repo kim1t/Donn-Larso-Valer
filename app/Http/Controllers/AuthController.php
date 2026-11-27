@@ -22,17 +22,26 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'username' => ['required','string','min:3','max:20', 'regex:/^[a-zA-Z0-9]+$/','unique:users,username',],
             'email' => 'required|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => 'required|string|min:8|max:255|confirmed',
             'role' => 'required|in:artist,gallery',
             'date_of_birth' => 'required|date|before:today',
         ],
         [
+            'name.required' => 'Please enter your name.',
             'username.required' => 'Please enter a username.',
             'username.min' => 'Your username must contain at least 3 characters.',
             'username.max' => 'Your username cannot exceed 20 characters.',
             'username.regex' => 'Username can only contain letters and numbers.',
             'username.unique' => 'This username is already taken. Please choose another one.',
-        ]);
+            'email.required' => 'Please enter your email address.',
+            'email.email' => 'Please enter a valid email address.',
+            'email.unique' => 'This email address is already registered.',
+            'password.min' => 'Your password must contain at least 8 characters.',
+            'password.confirmed' => 'Your password confirmation does not match.',
+            'role.in' => 'Role must be either artist or gallery.',
+            'date_of_birth.before' => 'Date of birth must be before today.',
+        ]
+        );
 
         // stores validated details into user creation instance
         $user = User::create($validated);
