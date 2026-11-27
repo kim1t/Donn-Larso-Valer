@@ -9,3 +9,5 @@ spec:
     services:
     - name: donn-larso-valer
       port: 80
+  tls:
+    secretName: null
