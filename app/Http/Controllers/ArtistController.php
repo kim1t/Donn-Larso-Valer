@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreArtistRequest;
 use App\Models\Artist;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ArtistController extends Controller
 {
@@ -31,19 +33,14 @@ class ArtistController extends Controller
         ], 200);
     }
 
-    public function store(Request $request){
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'avatar' => 'nullable|string|max:2048',
-            'user_id' => 'required|exists:users,id',
-        ]);
+    public function store(StoreArtistRequest $request): JsonResponse
+    {
+        $artist = Artist::create($request->validated());
 
-        $artist = Artist::create($validated);
         return response()->json([
             'message' => 'Artist created successfully',
-            'data' => $artist
-        ],201);
+            'data' => $artist,
+        ], 201);
     }
 
     public function update(Request $request, $id){
