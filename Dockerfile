@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend
+FROM --platform=$BUILDPLATFORM node:24-alpine3.24 AS frontend
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci
@@ -6,7 +6,7 @@ COPY resources resources
 COPY vite.config.js vite.config.js
 RUN npm run build
 
-FROM --platform=$BUILDPLATFORM golang:1.24-alpine AS hivemind
+FROM --platform=$BUILDPLATFORM golang:1.27-alpine3.24 AS hivemind
 ARG TARGETOS
 ARG TARGETARCH
 RUN --mount=type=cache,target=/go/pkg/mod \
@@ -14,7 +14,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_ENABLED=0 go install github.com/DarthSim/hivemind@v1.1.0 \
     && cp "$(find /go/bin -type f -name hivemind)" /hivemind
 
-FROM --platform=$BUILDPLATFORM composer:2 AS vendor
+FROM --platform=$BUILDPLATFORM composer:2.11 AS vendor
 WORKDIR /app
 COPY composer.json composer.lock ./
 RUN --mount=type=cache,target=/tmp/cache \
@@ -27,10 +27,10 @@ RUN --mount=type=cache,target=/tmp/cache \
 COPY . .
 RUN composer dump-autoload --optimize --no-dev --classmap-authoritative --ignore-platform-reqs
 
-FROM php:8.4-fpm-alpine AS final
+FROM php:8.5-fpm-alpine3.24 AS final
 
-RUN apk add --no-cache nginx \
-    && docker-php-ext-install opcache \
+RUN apk upgrade --no-cache \
+    && apk add --no-cache nginx \
     && rm -rf /var/cache/apk/* /tmp/*
 
 COPY --from=hivemind /hivemind /usr/local/bin/hivemind
