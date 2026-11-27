@@ -43,7 +43,7 @@ spec:
           value: preview
         - name: APP_URL
           value: https://donn-lar-so-valer-pr-8.brunobernard.dev
-        image: ghcr.io/kim1t/donn-larso-valer:pr-8-6625b84a53b4a089b11d8ef3f87baa398973aaec
+        image: ghcr.io/kim1t/donn-larso-valer:pr-8-6b680d424e2a970b84334b8c7be276a3acc12da1
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -98,19 +98,6 @@ spec:
       - emptyDir: {}
         name: data
 ---
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: donn-larso-valer-tls
-  namespace: donn-larso-valer-pr-8
-spec:
-  dnsNames:
-  - donn-lar-so-valer-pr-8.brunobernard.dev
-  issuerRef:
-    kind: ClusterIssuer
-    name: cluster-issuer-cloudflare-dns01
-  secretName: donn-larso-valer-tls
----
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
@@ -125,5 +112,4 @@ spec:
     services:
     - name: donn-larso-valer
       port: 80
-  tls:
-    secretName: donn-larso-valer-tls
+  tls: {}
