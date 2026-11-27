@@ -21,6 +21,5 @@ mkdir -p \
 
 php artisan migrate --force
 php artisan optimize
-php artisan storage:link 2>/dev/null || true
 
 exec php-fpm --nodaemonize
