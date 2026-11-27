@@ -43,7 +43,7 @@ spec:
           value: preview
         - name: APP_URL
           value: https://donn-lar-so-valer-pr-8.brunobernard.dev
-        image: ghcr.io/kim1t/donn-larso-valer:pr-8-2ab416a25e42160e39867c31db1774592f58ecfe
+        image: ghcr.io/kim1t/donn-larso-valer:pr-8-6625b84a53b4a089b11d8ef3f87baa398973aaec
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
