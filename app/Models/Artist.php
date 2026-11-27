@@ -14,8 +14,8 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 /**
  * @property-read int $id
  * @property string $name
- * @property string $description
- * @property string $avatar
+ * @property ?string $description
+ * @property ?string $avatar
  * @property int $user_id
  * @property-read CarbonInterface $created_at
  * @property-read CarbonInterface $updated_at

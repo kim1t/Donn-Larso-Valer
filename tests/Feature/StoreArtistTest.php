@@ -25,3 +25,17 @@ test('a user can create an artist profile', function (): void {
         ->and($artist->description)->toBe('Paints self portraits.')
         ->and($artist->user->is($user))->toBeTrue();
 });
+
+test('an artist can be created without a description or an avatar', function (): void {
+    $user = User::factory()->create();
+
+    $this->postJson('/api/artists', [
+        'name' => 'Frida',
+        'user_id' => $user->id,
+    ])->assertCreated();
+
+    $artist = Artist::query()->sole();
+
+    expect($artist->description)->toBeNull()
+        ->and($artist->avatar)->toBeNull();
+});
