@@ -43,7 +43,7 @@ spec:
                 - luna
       containers:
       - name: app
-        image: ghcr.io/kim1t/donn-larso-valer:latest@sha256:5e2d0046f3da4a69bbb30a5716b860889591cdb6d04241a7f665c8a168e9e767 # {"$imagepolicy": "flux-system:donn-larso-valer"}
+        image: ghcr.io/kim1t/donn-larso-valer:latest@sha256:0bdaf83fcb40bd45913cc215ba32aeab4ee4d7a254fe9e4a23681703e40ec9b0 # {"$imagepolicy": "flux-system:donn-larso-valer"}
         imagePullPolicy: IfNotPresent
         ports:
         - name: http
