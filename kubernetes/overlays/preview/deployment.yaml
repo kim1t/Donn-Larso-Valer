@@ -3,6 +3,9 @@ kind: Deployment
 metadata:
   name: donn-larso-valer
 spec:
+  strategy:
+    type: Recreate
+    rollingUpdate: null
   template:
     spec:
       affinity: null

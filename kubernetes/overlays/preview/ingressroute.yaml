@@ -6,8 +6,8 @@ spec:
   routes:
   - kind: Rule
     match: Host(`donn-lar-so-valer-pr-PR_NUMBER.brunobernard.dev`)
+    middlewares:
+    - name: preview-commit
     services:
     - name: donn-larso-valer
       port: 80
-  tls:
-    secretName: null
