@@ -43,8 +43,8 @@ COPY --chmod=0755 docker/fpm/entrypoint.sh /entrypoint.sh
 
 WORKDIR /var/www/html
 
-COPY --from=vendor --chown=www-data:www-data /app /var/www/html
-COPY --from=frontend --chown=www-data:www-data /app/public/build /var/www/html/public/build
+COPY --from=vendor /app /var/www/html
+COPY --from=frontend /app/public/build /var/www/html/public/build
 
 RUN mkdir -p \
         /data \
@@ -59,7 +59,7 @@ RUN mkdir -p \
     && ln -s /var/www/html/storage/app/public /var/www/html/public/storage \
     && rm -f /var/www/html/public/hot
 
-USER www-data
+USER 82:82
 EXPOSE 8080
 
 ENV APP_ENV=production \
